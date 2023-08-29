@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Service\CartService;
+
 use App\Repository\ProductRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -13,6 +15,7 @@ class PanierController extends AbstractController
     #[Route('/cart', name:'cart')]
     public function index(RequestStack $rs, ProductRepository $repo)
     {
+
         $session = $rs->getSession();
         $cart = $session->get('cart', []);
 
@@ -47,32 +50,9 @@ class PanierController extends AbstractController
     }
 
     #[Route('/cart/add/{id}', name: "cart_add")]
-    public function add($id, RequestStack $rs)
+    public function add($id, CartService $cs)
     {
-        
-        // je sauvegarde l'etat de mon panier en session a l'attribut de session 'cart'
-        //Nous allons récupérer une session grâce à la classe RequestStack
-        $session = $rs->getSession();
-
-        // je récupère l'attribut de session 'cart' s'il existe ou un tableau vide
-        $cart = $session->get('cart', []);
-        $qt = $session->get('qt', 0);
-
-        //si le produit existe déjà, j'incrémente sa quantité sinon j'initialise a 1 
-        if(!empty($cart[$id]))
-        {
-            $cart[$id]++;
-            $qt++;
-        }else
-        {   $qt++;
-             $cart[$id] = 1;
-        }
-       
-        // dans mon tableau $cart, à la case $id je donne la valeur 1
-        //indice => valeur // idProduit => QuantitéDuProduitDansLePanier
-
-        $session->set('cart', $cart);
-        $session->set('qt', $qt);
+        $cs->add($id);
         return $this->redirectToRoute('accueil');
     }
 
